@@ -1,7 +1,9 @@
 services:
-  oracle:
-    image: 'gvenzl/oracle-free:latest'
+  db:
+    image: postgres:16-alpine
     environment:
-      - 'ORACLE_PASSWORD=secret'
+      POSTGRES_DB: tod
+      POSTGRES_USER: tod
+      POSTGRES_PASSWORD: secret
     ports:
-      - '1521'
+      - '5432'

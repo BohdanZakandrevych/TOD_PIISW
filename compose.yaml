@@ -1,14 +1,16 @@
 services:
   db:
-    image: gvenzl/oracle-free:latest
+    image: postgres:16-alpine
     environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "${ORACLE_PORT}:1521"
+      - "${POSTGRES_PORT}:5432"
     volumes:
-      - oracle-data:/opt/oracle/oradata
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "healthcheck.sh" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -44,4 +46,4 @@ services:
       - backend
 
 volumes:
-  oracle-data:
+  postgres-data:
