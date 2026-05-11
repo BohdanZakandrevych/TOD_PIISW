@@ -16,6 +16,7 @@ services:
       retries: 10
 
   backend:
+    container_name: tod-backend
     build:
       context: ./back_tod/tod
     environment:
@@ -26,24 +27,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - default
+      - edge
 
   frontend:
+    container_name: tod-frontend
     build:
       context: ./front_tod
     environment:
       PORT: ${FRONTEND_PORT}
     depends_on:
       - backend
+    networks:
+      - default
+      - edge
 
-  nginx:
-    image: nginx:1.27-alpine
-    ports:
-      - "${NGINX_PORT}:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - frontend
-      - backend
 
 volumes:
   postgres-data:
+
+networks:
+  edge:
+    external: true
