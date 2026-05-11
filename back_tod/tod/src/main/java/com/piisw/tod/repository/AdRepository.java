@@ -4,8 +4,11 @@ import com.piisw.tod.model.Ad;
 import com.piisw.tod.model.AdStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,31 +20,40 @@ import java.util.Optional;
  * Repozytorium dla encji Ad (Ogłoszenie).
  */
 @Repository
-public interface AdRepository extends JpaRepository<Ad, Long> {
+public interface AdRepository extends JpaRepository<Ad, Long>, JpaSpecificationExecutor<Ad> {
+
+    @Override
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
+    Page<Ad> findAll(Specification<Ad> spec, Pageable pageable);
 
     /**
      * Wyszukiwanie ogłoszeń po statusie.
      */
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByStatus(AdStatus status);
 
     /**
      * Wyszukiwanie ogłoszeń po autorze (user_id).
      */
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByAuthorId(Long authorId);
 
     /**
      * Wyszukiwanie ogłoszeń po autorze i statusie.
      */
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByAuthorIdAndStatus(Long authorId, AdStatus status);
 
     /**
      * Wyszukiwanie ofłoszenia po tajnym tokenie (do podglądu wersji roboczych).
      */
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     Optional<Ad> findBySecretPreviewToken(String token);
 
     /**
      * Wyszukiwanie ogłoszeń opublikowanych.
      */
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByStatusOrderByCreatedAtDesc(AdStatus status);
 
     /**
@@ -65,6 +77,7 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
              OR LOWER(a.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
         ORDER BY a.createdAt DESC
         """)
+    @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> searchPublishedAds(@Param("searchTerm") String searchTerm, @Param("status") AdStatus status);
 
     /**
