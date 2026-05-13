@@ -70,4 +70,68 @@ class MessageControllerTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.content").value("This is a reply to the message"))
                 .andExpect(jsonPath("$.parentMessageId").value(parentMessageId));
     }
+
+    @Test
+    void shouldFailSendMessageToNonExistentUser() throws Exception {
+        String token = getAuthToken();
+
+        MessageSendRequestDto request = new MessageSendRequestDto("Hello!", 99999L, null);
+
+        mockMvc.perform(post("/api/messages")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldFailReplyToNonExistentMessage() throws Exception {
+        String token = getAuthToken();
+
+        MessageReplyRequestDto replyRequest = new MessageReplyRequestDto("Reply");
+
+        mockMvc.perform(post("/api/messages/99999/reply")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(replyRequest)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldFailSendMessageWithEmptyContent() throws Exception {
+        String token = getAuthToken();
+        User receiver = userRepository.findByEmail("sarah.jones@example.com").orElseThrow();
+
+        MessageSendRequestDto request = new MessageSendRequestDto("", receiver.getId(), null);
+
+        mockMvc.perform(post("/api/messages")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldFailReplyWithEmptyContent() throws Exception {
+        String token = getAuthToken();
+
+        // Fetch Inbox populated by DataFiller for John Smith
+        String inboxResponse = mockMvc.perform(get("/api/messages/inbox")
+                        .header("Authorization", "Bearer " + token))
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode root = objectMapper.readTree(inboxResponse);
+        JsonNode firstMessage = root.get("content").get(0);
+
+        assertNotNull(firstMessage, "Inbox should not be empty for John Smith");
+        Long parentMessageId = firstMessage.get("id").asLong();
+
+        MessageReplyRequestDto replyRequest = new MessageReplyRequestDto("");
+
+        mockMvc.perform(post("/api/messages/" + parentMessageId + "/reply")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(replyRequest)))
+                .andExpect(status().isBadRequest());
+    }
 }

@@ -2,6 +2,7 @@ package com.piisw.tod.service;
 
 import com.piisw.tod.dto.AdCreateRequestDto;
 import com.piisw.tod.dto.AdResponseDto;
+import com.piisw.tod.dto.AdUpdateRequestDto;
 import com.piisw.tod.model.Ad;
 import com.piisw.tod.model.AdStatus;
 import com.piisw.tod.model.User;
@@ -126,5 +127,100 @@ class AdServiceTest {
         });
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenUpdatingNonExistentAd() {
+        when(currentUserService.requireCurrentUser()).thenReturn(mockUser);
+        when(adRepository.findById(999L)).thenReturn(Optional.empty());
+
+        AdUpdateRequestDto request = new AdUpdateRequestDto("New Title", null, null, null, null);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.updateAd(999L, request);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowForbiddenWhenUpdatingNotOwnedAd() {
+        User otherUser = new User();
+        otherUser.setId(2L);
+
+        when(currentUserService.requireCurrentUser()).thenReturn(mockUser);
+
+        Ad existingAd = new Ad();
+        existingAd.setId(200L);
+        existingAd.setAuthor(otherUser);
+
+        when(adRepository.findById(200L)).thenReturn(Optional.of(existingAd));
+
+        AdUpdateRequestDto request = new AdUpdateRequestDto("New Title", null, null, null, null);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.updateAd(200L, request);
+        });
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenGettingNonExistentAd() {
+        when(currentUserService.requireCurrentUser()).thenReturn(mockUser);
+        when(adRepository.findById(999L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.getAd(999L);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowForbiddenWhenGettingDraftNotOwned() {
+        User otherUser = new User();
+        otherUser.setId(2L);
+
+        when(currentUserService.requireCurrentUser()).thenReturn(mockUser);
+
+        Ad draftAd = new Ad();
+        draftAd.setId(200L);
+        draftAd.setAuthor(otherUser);
+        draftAd.setStatus(AdStatus.DRAFT);
+
+        when(adRepository.findById(200L)).thenReturn(Optional.of(draftAd));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.getAd(200L);
+        });
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenPreviewingInvalidToken() {
+        when(adRepository.findBySecretPreviewToken("invalid")).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.previewDraftByToken("invalid");
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenPreviewingPublishedAdToken() {
+        Ad publishedAd = new Ad();
+        publishedAd.setId(200L);
+        publishedAd.setStatus(AdStatus.PUBLISHED);
+
+        when(adRepository.findBySecretPreviewToken("token")).thenReturn(Optional.of(publishedAd));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            adService.previewDraftByToken("token");
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 }

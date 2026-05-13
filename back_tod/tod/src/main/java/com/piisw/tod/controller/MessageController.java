@@ -32,7 +32,9 @@ public class MessageController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        int effectivePage = Math.max(0, page);
+        int effectiveSize = Math.max(1, size);
+        Pageable pageable = PageRequest.of(effectivePage, effectiveSize);
         return messageService.inbox(pageable);
     }
 
