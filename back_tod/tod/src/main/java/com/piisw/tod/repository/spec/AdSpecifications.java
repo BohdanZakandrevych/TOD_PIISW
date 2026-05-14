@@ -28,9 +28,6 @@ public final class AdSpecifications {
         );
     }
 
-    /**
-     * Filters ads that have ANY of the provided tag names (case-insensitive).
-     */
     public static Specification<Ad> hasAnyTagName(List<String> tagNames) {
         if (tagNames == null || tagNames.isEmpty()) {
             return (root, query, cb) -> cb.conjunction();

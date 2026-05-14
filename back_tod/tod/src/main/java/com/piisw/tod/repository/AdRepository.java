@@ -16,9 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repozytorium dla encji Ad (Ogłoszenie).
- */
 @Repository
 public interface AdRepository extends JpaRepository<Ad, Long>, JpaSpecificationExecutor<Ad> {
 
@@ -26,63 +23,36 @@ public interface AdRepository extends JpaRepository<Ad, Long>, JpaSpecificationE
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     Page<Ad> findAll(Specification<Ad> spec, Pageable pageable);
 
-    /**
-     * Wyszukiwanie ogłoszeń po statusie.
-     */
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByStatus(AdStatus status);
 
-    /**
-     * Wyszukiwanie ogłoszeń po autorze (user_id).
-     */
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByAuthorId(Long authorId);
 
-    /**
-     * Wyszukiwanie ogłoszeń po autorze i statusie.
-     */
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByAuthorIdAndStatus(Long authorId, AdStatus status);
 
-    /**
-     * Wyszukiwanie ofłoszenia po tajnym tokenie (do podglądu wersji roboczych).
-     */
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     Optional<Ad> findBySecretPreviewToken(String token);
 
-    /**
-     * Wyszukiwanie ogłoszeń opublikowanych.
-     */
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> findByStatusOrderByCreatedAtDesc(AdStatus status);
 
-    /**
-     * Wyszukiwanie ogłoszeń po tytule (LIKE search).
-     */
     List<Ad> findByTitleContainingIgnoreCase(String title);
 
-    /**
-     * Wyszukiwanie ogłoszeń po descripcji (LIKE search).
-     */
     List<Ad> findByDescriptionContainingIgnoreCase(String description);
 
-    /**
-     * Wyszukivanie ogłoszeń po tytule lub opisie.
-     */
     @Query("""
         SELECT a 
         FROM Ad a 
         WHERE a.status = :status 
         AND (LOWER(a.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) 
-             OR LOWER(a.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+              OR LOWER(a.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
         ORDER BY a.createdAt DESC
         """)
     @EntityGraph(attributePaths = {"tags", "contactInfos", "author", "imageUrls"})
     List<Ad> searchPublishedAds(@Param("searchTerm") String searchTerm, @Param("status") AdStatus status);
 
-    /**
-     * Wyszukiwanie ogłoszeń po tagach.
-     */
     @Query("""
         SELECT DISTINCT a 
         FROM Ad a 
@@ -92,19 +62,9 @@ public interface AdRepository extends JpaRepository<Ad, Long>, JpaSpecificationE
         """)
     Page<Ad> findByTagIdAndStatus(@Param("tagId") Long tagId, @Param("status") AdStatus status, Pageable pageable);
 
-    /**
-     * Wyszukiwanie ogłoszeń utworzonych po danej dacie.
-     */
     List<Ad> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime date);
 
-    /**
-     * Liczba ogłoszeń w danym statusie.
-     */
     long countByStatus(AdStatus status);
 
-    /**
-     * Liczba ogłoszeń użytkownika.
-     */
     long countByAuthorId(Long authorId);
 }
-

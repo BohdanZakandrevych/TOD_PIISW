@@ -9,24 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repozytorium dla encji Tag.
- */
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
 
-    /**
-     * Wyszukiwanie tagu po nazwie (case-insensitive).
-     */
     Optional<Tag> findByNameIgnoreCase(String name);
 
-    /**
-     * Wyszukiwanie tagów, których nazwa zaczyna się od danego prefiksu.
-     * Rezultaty są sortowane po ilości przypisanych ogłoszeń (malejąco - od najczęściej używanych).
-     * 
-     * @param prefix prefiks nazwy tagu
-     * @return lista tagów posortowana po częstości użycia
-     */
     @Query("""
         SELECT t 
         FROM Tag t 
@@ -37,13 +24,6 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
         """)
     List<Tag> findByNameStartingWithOrderByUsageCount(@Param("prefix") String prefix);
 
-    /**
-     * Wyszukiwanie tagów po nazwie zawierającej daną frazę (fuzzy search).
-     * Sortowanie po ilości przypisanych ogłoszeń.
-     * 
-     * @param phrase fraza do wyszukania
-     * @return lista tagów
-     */
     @Query("""
         SELECT t 
         FROM Tag t 
@@ -54,4 +34,3 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
         """)
     List<Tag> findByNameContainingOrderByUsageCount(@Param("phrase") String phrase);
 }
-

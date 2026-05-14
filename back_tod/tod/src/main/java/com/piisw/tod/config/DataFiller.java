@@ -13,11 +13,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Component that populates the database with test data on application startup.
- * Data is added only if the database is empty (no users exist).
- * Uses @EventListener(ApplicationReadyEvent.class) to ensure proper initialization timing.
- */
 @Slf4j
 @Component
 public class DataFiller {
@@ -52,7 +47,6 @@ public class DataFiller {
         log.info("[DataFiller] Starting database initialization...");
         
         try {
-            // Check if database already has data
             long userCount = userRepository.count();
             log.info("[DataFiller] Current user count: {}", userCount);
             
@@ -65,31 +59,26 @@ public class DataFiller {
             System.out.println("[DataFiller] Creating tags...");
             log.info("[DataFiller] Creating tags...");
 
-            // Create and save tags
             List<Tag> tags = createTags();
 
             System.out.println("[DataFiller] Creating users...");
             log.info("[DataFiller] Creating users...");
 
-            // Create and save users with contact information
             List<User> users = createUsers();
 
             System.out.println("[DataFiller] Creating ads...");
             log.info("[DataFiller] Creating ads...");
 
-            // Create ads
             createAds(users, tags);
 
             System.out.println("[DataFiller] Creating messages...");
             log.info("[DataFiller] Creating messages...");
 
-            // Create messages
             createMessages(users);
 
             System.out.println("[DataFiller] Verifying data...");
             log.info("[DataFiller] Verifying data...");
 
-            // Verify data was created correctly
             verifyData();
 
             System.out.println("[DataFiller] Database successfully populated with test data!");
@@ -120,7 +109,6 @@ public class DataFiller {
     }
 
     private List<User> createUsers() {
-        // User 1
         User user1 = User.builder()
                 .email("john.smith@example.com")
                 .password(passwordEncoder.encode("password123"))
@@ -146,7 +134,6 @@ public class DataFiller {
         user1.setContactInfos(Arrays.asList(contact1_phone, contact1_email, contact1_address));
         contactInfoRepository.saveAll(Arrays.asList(contact1_phone, contact1_email, contact1_address));
 
-        // User 2
         User user2 = User.builder()
                 .email("sarah.jones@example.com")
                 .password(passwordEncoder.encode("password456"))
@@ -167,7 +154,6 @@ public class DataFiller {
         user2.setContactInfos(Arrays.asList(contact2_phone, contact2_address));
         contactInfoRepository.saveAll(Arrays.asList(contact2_phone, contact2_address));
 
-        // User 3
         User user3 = User.builder()
                 .email("michael.brown@example.com")
                 .password(passwordEncoder.encode("password789"))
@@ -192,7 +178,6 @@ public class DataFiller {
         User user2 = users.get(1);
         User user3 = users.get(2);
 
-        // Ad 1 - Published
         Ad ad1 = Ad.builder()
                 .title("Dell XPS 13 Laptop - Nearly New")
                 .description("Selling a Dell XPS 13 from 2023. Excellent condition with no damage. " +
@@ -203,11 +188,10 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(5))
                 .updatedAt(LocalDateTime.now().minusDays(5))
                 .build();
-        ad1.getTags().add(tags.getFirst()); // electronics
-        ad1.getContactInfos().add(user1.getContactInfos().getFirst()); // phone
+        ad1.getTags().add(tags.getFirst());
+        ad1.getContactInfos().add(user1.getContactInfos().getFirst());
         adRepository.save(ad1);
 
-        // Ad 2 - Published
         Ad ad2 = Ad.builder()
                 .title("3+1 Seater Corner Sofa - Latest Model")
                 .description("Beautiful and comfortable 3+1 corner sofa in grey. Perfect for living rooms. " +
@@ -217,11 +201,10 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(3))
                 .updatedAt(LocalDateTime.now().minusDays(3))
                 .build();
-        ad2.getTags().addAll(Arrays.asList(tags.get(1), tags.get(6))); // furniture, home
-        ad2.getContactInfos().addAll(user2.getContactInfos()); // all contact info
+        ad2.getTags().addAll(Arrays.asList(tags.get(1), tags.get(6)));
+        ad2.getContactInfos().addAll(user2.getContactInfos());
         adRepository.save(ad2);
 
-        // Ad 3 - Draft
         Ad ad3 = Ad.builder()
                 .title("Trek Mountain Bike - Unused")
                 .description("New, unused Trek mountain bike. XL frame size. " +
@@ -231,11 +214,10 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(1))
                 .updatedAt(LocalDateTime.now())
                 .build();
-        ad3.getTags().add(tags.get(4)); // sports
-        ad3.getContactInfos().add(user1.getContactInfos().get(1)); // email
+        ad3.getTags().add(tags.get(4));
+        ad3.getContactInfos().add(user1.getContactInfos().get(1));
         adRepository.save(ad3);
 
-        // Ad 4 - Published
         Ad ad4 = Ad.builder()
                 .title("Science Fiction Books Collection")
                 .description("Selling a collection of sci-fi books in original English editions. " +
@@ -245,11 +227,10 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(7))
                 .updatedAt(LocalDateTime.now().minusDays(2))
                 .build();
-        ad4.getTags().add(tags.get(3)); // books
-        ad4.getContactInfos().add(user3.getContactInfos().getFirst()); // phone
+        ad4.getTags().add(tags.get(3));
+        ad4.getContactInfos().add(user3.getContactInfos().getFirst());
         adRepository.save(ad4);
 
-        // Ad 5 - Archived
         Ad ad5 = Ad.builder()
                 .title("Bosch Washing Machine - SOLD")
                 .description("Bosch 8kg washing machine - SOLD")
@@ -258,10 +239,9 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(30))
                 .updatedAt(LocalDateTime.now().minusDays(20))
                 .build();
-        ad5.getTags().add(tags.get(6)); // home
+        ad5.getTags().add(tags.get(6));
         adRepository.save(ad5);
 
-        // Ad 6 - Published with multiple tags
         Ad ad6 = Ad.builder()
                 .title("Estée Lauder Cosmetics Set - New")
                 .description("Complete, unopened cosmetics set by premium brand Estée Lauder. " +
@@ -271,11 +251,10 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(2))
                 .updatedAt(LocalDateTime.now().minusDays(2))
                 .build();
-        ad6.getTags().add(tags.get(8)); // beauty
+        ad6.getTags().add(tags.get(8));
         ad6.getContactInfos().addAll(user1.getContactInfos());
         adRepository.save(ad6);
 
-        // Ad 7 - Published
         Ad ad7 = Ad.builder()
                 .title("Baby Pram 4 in 1")
                 .description("Modern Kinderkraft 4 in 1 pram: cradle, pushchair, car seat. " +
@@ -285,7 +264,7 @@ public class DataFiller {
                 .createdAt(LocalDateTime.now().minusDays(4))
                 .updatedAt(LocalDateTime.now().minusDays(4))
                 .build();
-        ad7.getTags().add(tags.get(7)); // toys
+        ad7.getTags().add(tags.get(7));
         ad7.getContactInfos().add(user2.getContactInfos().getFirst());
         adRepository.save(ad7);
 
@@ -297,7 +276,6 @@ public class DataFiller {
         User user2 = users.get(1);
         User user3 = users.get(2);
 
-        // Message 1
         Message msg1 = Message.builder()
                 .content("Hi! Is the laptop still available? Can I arrange a viewing?")
                 .sentAt(LocalDateTime.now().minusHours(5))
@@ -307,7 +285,6 @@ public class DataFiller {
                 .build();
         messageRepository.save(msg1);
 
-        // Reply to message 1
         Message msg1Reply = Message.builder()
                 .content("Yes, the laptop is available! I can arrange a meeting this evening or tomorrow morning.")
                 .sentAt(LocalDateTime.now().minusHours(4))
@@ -318,7 +295,6 @@ public class DataFiller {
                 .build();
         messageRepository.save(msg1Reply);
 
-        // Message 2
         Message msg2 = Message.builder()
                 .content("How does the sofa look? What are the exact dimensions?")
                 .sentAt(LocalDateTime.now().minusHours(3))
@@ -328,7 +304,6 @@ public class DataFiller {
                 .build();
         messageRepository.save(msg2);
 
-        // Reply to message 2
         Message msg2Reply = Message.builder()
                 .content("The sofa is 250x100cm. I'll send you photos shortly.")
                 .sentAt(LocalDateTime.now().minusHours(2))
@@ -339,7 +314,6 @@ public class DataFiller {
                 .build();
         messageRepository.save(msg2Reply);
 
-        // Message 3
         Message msg3 = Message.builder()
                 .content("I'm interested in the sci-fi books. Are all of them available?")
                 .sentAt(LocalDateTime.now().minusHours(1))
@@ -352,9 +326,6 @@ public class DataFiller {
         log.info("[DataFiller] Created 5 messages");
     }
 
-    /**
-     * Verify that data was created correctly, especially for authentication.
-     */
     private void verifyData() {
         var user1 = userRepository.findByEmail("john.smith@example.com");
         if (user1.isPresent()) {

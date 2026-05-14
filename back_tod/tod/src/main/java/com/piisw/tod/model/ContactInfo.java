@@ -6,10 +6,6 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Encja reprezentująca dane kontaktowe użytkownika.
- * Użytkownik może mieć wiele danych kontaktowych (np. telefon, email, adres, itp.)
- */
 @Entity
 @Table(name = "contact_infos")
 @Getter
@@ -24,22 +20,15 @@ public class ContactInfo {
     private Long id;
 
     @Column(nullable = false)
-    private String type; // np. "PHONE", "EMAIL", "ADDRESS"
+    private String type;
 
     @Column(nullable = false)
-    private String value; // wartość (numer telefonu, email, adres itp.)
+    private String value;
 
-    /**
-     * Użytkownik, do którego należą dane kontaktowe.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    /**
-     * Ogłoszenia, do których przypisane są te dane kontaktowe.
-     * Ogłoszeniodawca wybiera, które dane kontaktowe będą widoczne dla konkretnego ogłoszenia.
-     */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "ad_contact_info",
@@ -49,4 +38,3 @@ public class ContactInfo {
     @Builder.Default
     private Set<Ad> ads = new HashSet<>();
 }
-
